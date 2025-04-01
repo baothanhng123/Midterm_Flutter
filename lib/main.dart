@@ -30,11 +30,13 @@ class _body extends StatefulWidget {
 }
 
 class _bodyState extends State<_body> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _textEditingController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+        controller: _scrollController,
         child: Padding(
             padding: EdgeInsets.all(8),
             child: IntrinsicHeight(
@@ -52,29 +54,35 @@ class _bodyState extends State<_body> {
                   children: [
                     // Icon(Icons.photo_size_select_actual_rounded),
                     Expanded(
-                        child: Card(
+                        child: Container(
+                          height: 150,
+                          //TEXT FIELD
                             child: TextField(
-                      //TEXT FIELD
-                      controller: _controller,
+                      controller: _textEditingController,
                       decoration: InputDecoration(
                           hintText: "Ask anything",
                           enabledBorder: InputBorder.none,
                           focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.black, width: 0.5),
+                            borderRadius: BorderRadius.all(Radius.zero)
                           )),
-                      maxLines: null, // allow 4 lines
-                      keyboardType:
-                          TextInputType.multiline, //enable multiline input
+                      
+                      maxLines: null,
+                      //allows users to press "Enter" to move to the next line inside a TextField
+                      textInputAction: TextInputAction.newline,   
+                      keyboardType: TextInputType.multiline,
+                      expands: false,
                     ))),
                     SizedBox(
-                      height: 40,
+                      height: 50,
+                      //Button
                       child: ElevatedButton(
                         onPressed: () {
                           setState(() {});
                         },
+
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
+                            backgroundColor: Colors.grey[50],
+                            
                             elevation: 0,
                             padding: EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 20),
@@ -86,8 +94,10 @@ class _bodyState extends State<_body> {
                         ),
                       ),
                     ),
+                   
                   ],
-                )
+                ),
+                
               ],
             ))));
   }
