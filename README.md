@@ -16,4 +16,4 @@ II. GET YOUR OWN API KEY TO USE CHAT SERVICE
 3. Write your token name, tick on every check box in Repositories, Inference, Webhooks, Collections -> Press Create token
 4. Copy your own token
 5. Locate chat_service.dart file(in services Folder)
-6. Paste your copied api key to "final String apiKey = "";" (line 7)
+6. Paste your copied api key to "final String apiKey = "YOUR_API_KEY_HERE";" (line 7)
