@@ -1,113 +1,108 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'services/chat_service.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Chat GPT"),
-          centerTitle: true,
-        ),
-        body: _body(), //body
-      ),
+      home: ChatScreen(),
     );
   }
 }
 
-//class for body
-class _body extends StatefulWidget {
+class ChatScreen extends StatefulWidget {
   @override
-  State<_body> createState() => _bodyState();
+  _ChatScreenState createState() => _ChatScreenState();
 }
 
-class _bodyState extends State<_body> {
+class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _textEditingController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final AIService _chatService = AIService();
+  List<Map<String, String>> messages = [];
+
+  void _sendMessage() async {
+    String userMessage = _textEditingController.text.trim();
+    if (userMessage.isEmpty) return;
+
+    setState(() {
+      messages.add({"role": "user", "text": userMessage});
+    });
+
+    _textEditingController.clear();
+
+    String botResponse = await _chatService.sendMessage(userMessage);
+
+    setState(() {
+      messages.add({"role": "bot", "text": botResponse});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(8),
-      
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                child: Text(
-                  "What can I help you with",
-                  softWrap: true,
-                  overflow: TextOverflow.visible,
-                ),
-              ),
+    return Scaffold(
+      appBar: AppBar(title: Text("Chat with Deepseek")),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.all(8),
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                final message = messages[index];
+                return Align(
+                  alignment: message["role"] == "user"
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      color: message["role"] == "user"
+                          ? Colors.blueAccent
+                          : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      message["text"]!,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                );
+              },
             ),
-            Row(
+          ),
+
+          // Input field
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
                 Expanded(
-                  flex: 1,
-                  child: Container(
-                  
-                    height: 150,
-                    //TEXT FIELD
-                    child: TextField(
-                      controller: _textEditingController,
-                      decoration: InputDecoration(
-                        hintText: "Ask anything",
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: UnderlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.zero),
-                        ),
-                      ),
-                      maxLines: null,
-                      //make new line when the "Enter" key is pressed on the keyboard
-                      textInputAction: TextInputAction.newline, 
-                      keyboardType: TextInputType.multiline,
-                      expands: false,
+                  child: TextField(
+                    controller: _textEditingController,
+                    decoration: InputDecoration(
+                      hintText: "Type a message...",
+                      border: OutlineInputBorder(),
                     ),
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {});
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[50],
-                      elevation: 0,
-                      padding:
-                          EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(2)),
-                      ),
-                    ),
-                    child: Icon(Icons.arrow_forward),
-                  ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: _sendMessage,
+                  child: Icon(Icons.send),
                 ),
               ],
             ),
-            //CHAT GPT CONTENT
-            Expanded(
-                flex: 8,
-                child: SingleChildScrollView(
-                  child: Container(
-                    alignment: Alignment.topLeft,
-                    child: Text("Text Content",textAlign: TextAlign.left,)
-                  ),
-                ))
-          ],
-          
-        ),
-      
+          ),
+        ],
+      ),
     );
   }
 }
