@@ -13,4 +13,7 @@ I. Add http: ^1.3.0 to your Flutter project
 II. GET YOUR OWN API KEY TO USE CHAT SERVICE
 1. Create login account in huggingface: https://huggingface.co/
 2. Click user profile avatar -> Choose access tokens(you may be prompted to type password)
-3. Write your token name, tick on every check box in Repositories, Inference, Webhooks, Collections
+3. Write your token name, tick on every check box in Repositories, Inference, Webhooks, Collections -> Press Create token
+4. Copy your own token
+5. Locate chat_service.dart file(in services Folder)
+6. Paste your copied api key to "final String apiKey = "";"
