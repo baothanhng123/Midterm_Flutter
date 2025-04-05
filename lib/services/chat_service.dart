@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 //https://huggingface.co/deepseek-ai/DeepSeek-R1
 //login account in huggingface -> account setting -> access token -> create new token
 
 class AIService {
-  final String apiKey = "";  // GET YOUR OWN API KEY in FaceHugging website
-  final String apiUrl = "https://router.huggingface.co/sambanova/v1/chat/completions";
+  final String apiKey =
+      ""; // GET YOUR OWN API KEY in FaceHugging website
+  final String apiUrl =
+      "https://router.huggingface.co/sambanova/v1/chat/completions";
 
   Future<String> sendMessage(String message) async {
     try {
@@ -17,20 +20,19 @@ class AIService {
         },
         body: jsonEncode({
           "messages": [
-            {
-                "role": "user",
-                "content": message
-            }
-        ],
-        "max_tokens": 500,
-        "model": "DeepSeek-R1",
-        "stream": false
+            {"role": "user", "content": message}
+          ],
+          "max_tokens": 500,
+          "model": "DeepSeek-R1",
+          "stream": false
         }),
       );
-
+      if (response.statusCode == 402) {
+        return "Payment Required: Check your API credits or billing status.";
+      }
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data["choices"][0]["message"]["content"];  
+        return data["choices"][0]["message"]["content"];
       } else {
         return "Error: ${response.statusCode} - ${response.body}";
       }
