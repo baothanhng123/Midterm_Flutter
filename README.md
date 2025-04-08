@@ -17,3 +17,6 @@ II. GET YOUR OWN API KEY TO USE CHAT SERVICE
 4. Copy your own token
 5. Locate chat_service.dart file(in services Folder)
 6. Paste your copied api key to "final String apiKey = "YOUR_API_KEY_HERE";" (line 7)
+
+III. Install packages for backend
+  1. In terminal, navigate to project folder and use command line "npm install express mongoose cors"
