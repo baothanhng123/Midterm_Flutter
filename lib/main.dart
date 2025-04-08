@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/chat_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Chat UI',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF2F4F3), // Nền xám nhạt
+        scaffoldBackgroundColor: const Color(0xFFF2F4F3),
       ),
       debugShowCheckedModeBanner: false,
       home: ChatScreen(),
@@ -28,14 +30,60 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _textEditingController = TextEditingController();
   final AIService _chatService = AIService();
+  final String ipAddress = '10.0.2.2'; //10.0.2.2(emulator) or localhost(windows)
   List<Map<String, String>> messages = [];
+  String status = "Checking connection...";
+
   @override
-  void dispose() {//cleaning up resources when a widget is removed 
+  void dispose() {
     _textEditingController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    checkMongoConnection();
+    fetchMessagesFromBackend();
+  }
+
+  //CHECK backend connection
+  void checkMongoConnection() async {
+    try {
+      final response =
+          await http.get(Uri.parse("http://${ipAddress}:3000/messages"));
+      if (response.statusCode == 200) {
+        setState(() => status = "Connected to MongoDB!");
+      } else {
+        setState(() => status = "Backend error: ${response.statusCode}");
+      }
+    } catch (e) {
+      setState(() => status = "Could not connect to backend");
+    }
+  }
+
+  Future<void> fetchMessagesFromBackend() async {
+    try {
+      final response =
+          await http.get(Uri.parse("http://${ipAddress}:3000/messages"));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          messages = data
+              .map<Map<String, String>>((msg) => {
+                    "role": msg["role"],
+                    "text": msg["text"],
+                  })
+              .toList();
+        });
+      }
+    } catch (e) {
+      print("Exception fetching messages: $e");
+    }
+  }
+
+  //send user input message to backend
   void _sendMessage() async {
     String userMessage = _textEditingController.text.trim();
     if (userMessage.isEmpty) return;
@@ -44,7 +92,17 @@ class _ChatScreenState extends State<ChatScreen> {
       messages.add({"role": "user", "text": userMessage});
     });
 
+    await http.post(
+      Uri.parse("http://${ipAddress}:3000/messages"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "role": "user",
+        "text": userMessage,
+      }),
+    );
+
     _textEditingController.clear();
+    //node refocus after user type submit
     _focusNode.requestFocus();
 
     String botResponse = await _chatService.sendMessage(userMessage);
@@ -52,13 +110,22 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() {
       messages.add({"role": "bot", "text": botResponse});
     });
+
+    await http.post(
+      Uri.parse("http://${ipAddress}:3000/messages"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "role": "bot",
+        "text": botResponse,
+      }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Chat with Deepseek"),
+        title: Text(status),
         backgroundColor: Color(0xFF2ECC71),
         leading: Builder(
           builder: (context) => IconButton(
@@ -72,45 +139,70 @@ class _ChatScreenState extends State<ChatScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF2ECC71),
-              ),
+              decoration: BoxDecoration(color: Color(0xFF2ECC71)),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: Color(0xFF2ECC71),
-                    ),
+                    child:
+                        Icon(Icons.person, size: 40, color: Color(0xFF2ECC71)),
                   ),
                   SizedBox(width: 16),
-                  Text(
-                    'ChatGPT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
-                  ),
+                  Text('ChatGPT',
+                      style: TextStyle(color: Colors.white, fontSize: 24)),
                 ],
               ),
             ),
             ListTile(
               leading: Icon(Icons.explore),
               title: Text('Explore GPTs'),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // Add navigation or functionality for Explore GPTs here
-              },
+              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: Icon(Icons.chat),
-              title: Text('Chats'),
+              //Delete CHAT
+              title: Text('New Chat'),
               onTap: () {
-                Navigator.pop(context); // Close the drawer
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Start a new chat?"),
+                      content: Text("This will clear the current messages."),
+                      actions: [
+                        TextButton(
+                          child: Text("Cancel"),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close dialog only
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Start new"),
+                          onPressed: () async {
+                            // Clear MongoDB messages via backend
+                            await http.delete(
+                                Uri.parse("http://${ipAddress}:3000/messages"));
+
+                            setState(() {
+                              messages.clear(); // Clear locally
+                            });
+
+                            Navigator.of(context).pop(); // Close dialog
+                            Navigator.of(context).pop(); // Close drawer
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
               },
+            ),
+            Divider(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Chat History",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -132,22 +224,18 @@ class _ChatScreenState extends State<ChatScreen> {
                     margin: EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
                       color: message["role"] == "user"
-                          ? const Color(
-                              0xFF2ECC71) // Tin nhắn người dùng: xanh lá
-                          : const Color(
-                              0xFFD5F5E3), // Tin nhắn AI: xanh lá nhạt
+                          ? const Color(0xFF2ECC71)
+                          : const Color(0xFFD5F5E3),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      message["text"]!,
-                      style: TextStyle(color: Colors.black),
-                    ),
+                    child: Text(message["text"]!,
+                        style: TextStyle(color: Colors.black)),
                   ),
                 );
               },
             ),
           ),
-          // Input field
+          //USER input textfield
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -170,12 +258,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 SizedBox(width: 8),
+                //send message button
                 ElevatedButton(
                   onPressed: _sendMessage,
-                  child: Icon(
-                    Icons.send,
-                    color: Color(0xFF2ECC71),
-                  ),
+                  child: Icon(Icons.send, color: Color(0xFF2ECC71)),
                 ),
               ],
             ),

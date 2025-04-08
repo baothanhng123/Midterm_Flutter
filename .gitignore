@@ -54,3 +54,9 @@ pubspec.yaml
 pubspec.lock
 .metadata
 analysis_options.yaml
+
+#backend related
+node_modules
+package-lock.json
+package.json
+

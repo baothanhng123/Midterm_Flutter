@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 //https://huggingface.co/deepseek-ai/DeepSeek-R1
 //login account in huggingface -> account setting -> access token -> create new token
-
+//
 class AIService {
   final String apiKey =
       ""; // GET YOUR OWN API KEY in FaceHugging website
