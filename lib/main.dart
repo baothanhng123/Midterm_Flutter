@@ -30,7 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _textEditingController = TextEditingController();
   final AIService _chatService = AIService();
-  final String ipAddress = '10.0.2.2'; //10.0.2.2(emulator) or localhost(windows)
+  final String ipAddress = 'localhost'; //10.0.2.2(emulator) or localhost(windows)
   List<Map<String, String>> messages = [];
   String status = "Checking connection...";
 
@@ -54,12 +54,12 @@ class _ChatScreenState extends State<ChatScreen> {
       final response =
           await http.get(Uri.parse("http://${ipAddress}:3000/messages"));
       if (response.statusCode == 200) {
-        setState(() => status = "Connected to MongoDB!");
+        setState(() => status = "Welcome to chat GPT");
       } else {
         setState(() => status = "Backend error: ${response.statusCode}");
       }
     } catch (e) {
-      setState(() => status = "Could not connect to backend");
+      setState(() => status = "Could not connect to chat service");
     }
   }
 
