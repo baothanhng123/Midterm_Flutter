@@ -20,3 +20,8 @@ II. GET YOUR OWN API KEY TO USE CHAT SERVICE
 
 III. Install packages for backend
   1. In terminal, navigate to project folder and use command line "npm install express mongoose cors"
+
+IV. Change Ip Address depending on environment(emulator or windows)
+In main.dart file, line 33 "final String ipAddress = 'YOUR_IP_ADDRESS_HERE'"
+  1. If run main.dart file on Emulator, change Ip Address to 10.0.2.2
+  2. If run main.dart file on on Window, change Ip Address to localhost
