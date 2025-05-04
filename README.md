@@ -1,4 +1,4 @@
-I. Add http: ^1.3.0 to your Flutter project
+I. Add http: ^1.3.0 to your Flutter project(skip to step 3 if the library is already available)
   1. Open pubspec.yaml
   Locate the pubspec.yaml file in the root directory of your Flutter project
   
@@ -28,3 +28,7 @@ IV. Change Ip Address depending on environment(emulator or windows)
 In main.dart file, line 33 "final String ipAddress = 'YOUR_IP_ADDRESS_HERE'"
   1. If run main.dart file on Emulator, change Ip Address to 10.0.2.2
   2. If run main.dart file on on Window, change Ip Address to localhost
+V. Run the program
+  1. Open MongoDBCompass, create a new connection with default URI and connect to it
+  2. Run server.js file
+  3. Run Flutter project
