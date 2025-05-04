@@ -50,7 +50,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 README.md
-pubspec.yaml
 pubspec.lock
 .metadata
 analysis_options.yaml

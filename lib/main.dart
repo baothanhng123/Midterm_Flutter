@@ -224,8 +224,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     margin: EdgeInsets.symmetric(vertical: 4),
                     decoration: BoxDecoration(
                       color: message["role"] == "user"
-                          ? const Color(0xFF2ECC71)
-                          : const Color(0xFFD5F5E3),
+                          ? const Color(0xFF3498DB) // New color for user messages
+                          : const Color(0xFFF1C40F), // New color for bot messages
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(message["text"]!,
